@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>PsicoTech PWA</title>
+  <meta name="theme-color" content="#2459A6"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="images/icon-192x192.png"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+
+  <!-- Header global -->
+  <header class="app-header" role="banner">
+    <div class="app-header-inner">
+      <button class="icon-btn" id="btn-open-menu" aria-label="Abrir menú" title="Menú">☰</button>
+
+      <div class="brand">
+        <img src="images/icon-192x192.png" alt="" width="24" height="24" loading="lazy"/>
+        <span class="brand-name">PsicoTech PWA</span>
+        <span id="badge-offline" class="badge badge-offline" aria-live="polite" hidden>Offline</span>
+        <span id="badge-lowdata" class="badge badge-lowdata" aria-live="polite" hidden>Datos bajos</span>
+      </div>
+
+      <!-- Botón de instalación (solo visible cuando sea elegible) -->
+      <button id="btn-install" class="btn btn-primary btn-install-header" hidden>
+        Instalar PsicoTech
+      </button>
+
+      <button class="icon-btn" id="btn-open-notifications" aria-label="Notificaciones" title="Notificaciones">
+        🔔 <span id="notif-count" class="notif-dot" aria-hidden="true" hidden></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main" class="app-main" role="main" tabindex="-1">
+    <!-- =================== WELCOME =================== -->
+    <section class="page active" id="page-welcome" aria-labelledby="welcome-title">
+      <h1 id="welcome-title" class="visually-hidden">Bienvenida</h1>
+      <div class="welcome">
+        <img src="images/icon-512x512.png" alt="" class="welcome-logo" width="128" height="128" loading="lazy"/>
+        <h2>Bienvenida a PsicoTech</h2>
+        <p>Conecta con psicólogos certificados, agenda y recibe recordatorios. Funciona sin conexión.</p>
+        <button id="btn-start-anon" class="btn btn-primary">Entrar sin cuenta</button>
+        <button id="btn-go-login" class="btn btn-link">Iniciar sesión / Registrarse</button>
+      </div>
+    </section>
+
+    <!-- =================== LOGIN =================== -->
+    <section class="page" id="page-login" aria-labelledby="login-title">
+      <header class="subheader">
+        <button class="back-button" data-back-to="page-welcome" aria-label="Volver">←</button>
+        <h2 id="login-title">Acceso</h2>
+      </header>
+      <form class="form" id="form-login" novalidate aria-describedby="login-desc">
+        <p id="login-desc" class="muted">Se guarda localmente solo lo mínimo (citas, notas). Usa HTTPS para cifrado en tránsito.</p>
+        <label for="login-email">Correo</label>
+        <input id="login-email" class="input" type="email" autocomplete="username" required/>
+        <label for="login-pass">Contraseña</label>
+        <input id="login-pass" class="input" type="password" autocomplete="current-password" required/>
+        <label class="check">
+          <input id="consent" type="checkbox" required/> Acepto el consentimiento informado
+        </label>
+        <button class="btn btn-primary" type="submit">Entrar</button>
+      </form>
+    </section>
+
+    <!-- =================== HOME =================== -->
+    <section class="page" id="page-home" aria-labelledby="home-title">
+      <h2 id="home-title" class="visually-hidden">Inicio</h2>
+      <div class="grid-shortcuts">
+        <button class="card btn" data-go="page-search" aria-label="Buscar psicólogo">🔎 Buscar psicólogo</button>
+        <button class="card btn" data-go="page-search" aria-label="Agendar sesión">🗓️ Agendar</button>
+        <button class="card btn" data-go="page-mood" aria-label="Mi estado de ánimo">🙂 Mi ánimo</button>
+      </div>
+
+      <section class="section">
+        <h3>Próximas sesiones</h3>
+        <ul id="list-upcoming" class="list"></ul>
+        <p class="empty muted" id="empty-upcoming" hidden>Aún no tienes sesiones. ¡Agenda tu primera consulta!</p>
+      </section>
+    </section>
+
+    <!-- =================== BUSCAR =================== -->
+    <section class="page" id="page-search" aria-labelledby="search-title">
+      <header class="subheader">
+        <button class="back-button" data-back-to="page-home" aria-label="Volver">←</button>
+        <h2 id="search-title">Buscar psicólogo</h2>
+      </header>
+
+      <div class="filters">
+        <label class="sr-only" for="q">Buscar</label>
+        <input id="q" class="input" type="search" placeholder="Nombre o palabra clave" aria-label="Buscar"/>
+        <div class="row">
+          <label>Especialidad
+            <select id="f-specialty" class="input">
+              <option value="">Todas</option>
+              <option value="ansiedad">Ansiedad</option>
+              <option value="depresion">Depresión</option>
+              <option value="pareja">Terapia de pareja</option>
+            </select>
+          </label>
+          <label>Modalidad
+            <select id="f-mode" class="input">
+              <option value="">Todas</option>
+              <option value="virtual">Virtual</option>
+              <option value="presencial">Presencial</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <ul id="list-therapists" class="cards"></ul>
+      <p class="empty muted" id="empty-therapists" hidden>No hay resultados con esos filtros.</p>
+    </section>
+
+    <!-- =================== DETALLE / AGENDAR =================== -->
+    <section class="page" id="page-detail" aria-labelledby="detail-title">
+      <header class="subheader">
+        <button class="back-button" data-back-to="page-search" aria-label="Volver">←</button>
+        <h2 id="detail-title">Perfil</h2>
+      </header>
+
+      <article class="detail" id="therapist-detail" aria-live="polite"></article>
+
+      <form class="form form-inline" id="form-book">
+        <label>Fecha
+          <input id="book-date" type="date" class="input" required/>
+        </label>
+        <label>Hora
+          <input id="book-time" type="time" class="input" required/>
+        </label>
+        <button class="btn btn-primary" type="submit">Confirmar cita</button>
+      </form>
+    </section>
+
+    <!-- =================== SESIONES =================== -->
+    <section class="page" id="page-sessions" aria-labelledby="sessions-title">
+      <header class="subheader">
+        <button class="back-button" data-back-to="page-home" aria-label="Volver">←</button>
+        <h2 id="sessions-title">Mis sesiones</h2>
+      </header>
+
+      <ul id="list-sessions" class="list"></ul>
+      <p class="empty muted" id="empty-sessions" hidden>No hay sesiones todavía.</p>
+    </section>
+
+    <!-- =================== ÁNIMO =================== -->
+    <section class="page" id="page-mood" aria-labelledby="mood-title">
+      <header class="subheader">
+        <button class="back-button" data-back-to="page-home" aria-label="Volver">←</button>
+        <h2 id="mood-title">Mi estado de ánimo</h2>
+      </header>
+
+      <form class="form form-inline" id="form-mood">
+        <label for="mood-score">Calif. (1–5)</label>
+        <input id="mood-score" class="input" type="number" min="1" max="5" required/>
+        <label for="mood-note">Nota breve</label>
+        <input id="mood-note" class="input" type="text" maxlength="120" placeholder="Opcional"/>
+        <button class="btn" type="submit">Guardar</button>
+      </form>
+
+      <ul id="list-mood" class="list list-compact"></ul>
+      <p id="empty-mood" class="empty muted" hidden>Aún no registras tu ánimo.</p>
+    </section>
+
+    <!-- =================== RECURSOS =================== -->
+    <section class="page" id="page-resources" aria-labelledby="resources-title">
+      <header class="subheader">
+        <button class="back-button" data-back-to="page-home" aria-label="Volver">←</button>
+        <h2 id="resources-title">Recursos y ejercicios</h2>
+      </header>
+
+      <div class="cards" id="cards-resources">
+        <article class="card resource">
+          <h3>Respiración 4-7-8</h3>
+          <p>Inhala 4s, sostén 7s, exhala 8s. Repite x3.</p>
+          <button class="btn btn-outline" data-save-resource="resp478">Guardar offline</button>
+        </article>
+        <article class="card resource">
+          <h3>Ejercicio de 5 sentidos</h3>
+          <p>5 ver, 4 tocar, 3 oír, 2 oler, 1 saborear.</p>
+          <button class="btn btn-outline" data-save-resource="5s">Guardar offline</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- =================== NOTIFICACIONES =================== -->
+    <section class="page" id="page-notifs" aria-labelledby="notifs-title">
+      <header class="subheader">
+        <button class="back-button" data-back-to="page-home" aria-label="Volver">←</button>
+        <h2 id="notifs-title">Recordatorios</h2>
+      </header>
+      <p class="muted">Activa recordatorios de próximas sesiones y chequeos de ánimo.</p>
+      <div class="row">
+        <button id="btn-enable-notifs" class="btn btn-primary">Activar notificaciones</button>
+        <button id="btn-test-notif" class="btn">Probar</button>
+      </div>
+    </section>
+
+    <!-- =================== PERFIL =================== -->
+    <section class="page" id="page-profile" aria-labelledby="profile-title">
+      <header class="subheader">
+        <button class="back-button" data-back-to="page-home" aria-label="Volver">←</button>
+        <h2 id="profile-title">Perfil y privacidad</h2>
+      </header>
+
+      <div class="section">
+        <label class="check">
+          <input id="toggle-lowdata" type="checkbox"/> Modo bajo datos (lazy, menos imágenes/animaciones)
+        </label>
+        <label class="check">
+          <input id="toggle-consent" type="checkbox"/> Recordar consentimiento
+        </label>
+      </div>
+
+      <!-- Botón de instalación también en Perfil (respaldo) -->
+      <div class="section">
+        <button id="btn-install-profile" class="btn" hidden>Instalar PsicoTech</button>
+      </div>
+
+      <details class="section">
+        <summary>Política de privacidad (resumen)</summary>
+        <ul class="bullets">
+          <li>En tránsito: usa siempre HTTPS/TLS.</li>
+          <li>Mínimos datos locales: citas y notas en tu dispositivo.</li>
+          <li>Sin rastreadores; control granular.</li>
+          <li>Roles: paciente/profesional (requiere backend).</li>
+          <li>Security headers desde servidor: CSP, HSTS, COEP/CORP.</li>
+        </ul>
+      </details>
+    </section>
+  </main>
+
+  <!-- NAV INFERIOR -->
+  <nav id="bottom-nav" class="bottom-nav" role="navigation" aria-label="Navegación principal">
+    <button class="nav-btn" data-page="page-home">🏠<br>Inicio</button>
+    <button class="nav-btn" data-page="page-search">🔎<br>Buscar</button>
+    <button class="nav-btn" data-page="page-sessions">🗓️<br>Sesiones</button>
+    <button class="nav-btn" data-page="page-resources">📚<br>Recursos</button>
+    <button class="nav-btn" data-page="page-profile">👤<br>Perfil</button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>
